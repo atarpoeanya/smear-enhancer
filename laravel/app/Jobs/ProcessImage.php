@@ -4,12 +4,17 @@ namespace App\Jobs;
 
 use App\Models\Image;
 use App\Models\ProcessedImage;
+use App\Services\SavePreprocessedImage;
+use Barryvdh\Debugbar\Facades\Debugbar;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Log\Logger;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Facades\Storage;
 
 class ProcessImage implements ShouldQueue
 {
@@ -18,37 +23,26 @@ class ProcessImage implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(public Image $original, public string $image_path, public string $output_folder, public string $model_path, public int $episode_len) {}
+    public function __construct(public $id, public string $original_path, public string $model_path, public int $episode_len) {}
 
     /**
      * Execute the job.
      */
-    public function handle(): void
+    public function handle(SavePreprocessedImage $savePreprocessedImage): void
     {
 
-        $imageName = 'st-'.time().'.png';
-
-        $command = escapeshellcmd('python '.'"'.base_path('python-script/blood-enhancer/test_b.py').'"'
-        .' "'.$this->image_path.'" "'
-        .$this->output_folder.$imageName.'" "'
-        .$this->model_path.'" "'
-        .$this->episode_len.'"');
-
+        $original_path = Storage::disk('original')->path($this->original_path);
+        
+        $command = escapeshellcmd('python '.'"'.base_path('python-script/blood-enhancer/test_b.py').'" "'.$original_path.'" "'.public_path('/').'" "'.$this->model_path.'" "'.$this->episode_len.'"');
+        
         // ("Usage: python process_image.py <input_path> <output_path> <model_path> <episode_len>")
+        
+        $result = Process::run($command, function (string $type, string $output) {
+            echo $output;
+        });
+        $result->successful();
 
-        // $result = Process::run($command);
-
-        // Save preprocessed image to model
-        // $output_path = $result->output();
-        // echo $result->errorOutput();
-        // echo $result->output();
-        $output_path = 'Yeah';
-
-        $p_image = new ProcessedImage(['path' => $output_path]);
-
-        $this->original->preprocessedImages()->save($p_image);
-
-        // $result->successful();
-
+        // Save preprocessed image to public disk
+        $savePreprocessedImage->saveImage($this->id, $result->output());
     }
 }

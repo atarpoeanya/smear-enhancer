@@ -38,6 +38,7 @@ def test(loader: image_loader.ImageLoader,
     reward = np.zeros(raw_x.shape, raw_x.dtype)*255
     
     for t in range(0, episode_len):
+        temp_name = "st" + str(datetime.datetime.now()) + ".png"
         # print(f'Current step {t}')
         previous_image = current_state.image.copy()
         action = agent.act(current_state.image)
@@ -55,7 +56,7 @@ def test(loader: image_loader.ImageLoader,
         p = np.minimum(1,p)
         p = (p*255+0.5).astype(np.uint8)
         # Write per episode
-        cv2.imwrite(image_result_path, np.transpose(p[0], (1,2,0)))
+        cv2.imwrite(image_result_path + temp_name, np.transpose(p[0], (1,2,0)))
 
 
     agent.stop_episode()
@@ -65,7 +66,7 @@ def test(loader: image_loader.ImageLoader,
     I = (I*255+0.5).astype(np.uint8)
     sum_psnr += cv2.PSNR(p, I)
     
-    return image_result_path
+    return temp_name
  
  
 def main(input_path: str, image_result_path: str, model_used_path: str, episode_len = 5):
@@ -92,7 +93,9 @@ def main(input_path: str, image_result_path: str, model_used_path: str, episode_
  
 if __name__ == '__main__':
     if len(sys.argv) != 5:
-        print("Usage: python process_image.py <input_path> <output_path> <model_path> <episode_len>")
+        # print("Usage: python process_image.py <input_path> <output_path> <model_path> <episode_len>")
+        # print(sys.argv[1])
+        # print(sys.argv[3])
         sys.exit(1)
 
     input_path = sys.argv[1]
@@ -101,6 +104,7 @@ if __name__ == '__main__':
     episode_len = int(sys.argv[4])
     try:
         # fout = open('testlog.txt', "w")
+        print(sys.argv[2])
         main(input_path, output_path, model_path, episode_len)
     except Exception as error:
         print(error.message)

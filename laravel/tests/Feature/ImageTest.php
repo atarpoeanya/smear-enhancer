@@ -22,27 +22,26 @@ class ImageTest extends TestCase
     public function test_image_upload_and_return_response(): void
     {
         // Fake the storage
-        Storage::fake('public');
+        Storage::fake('original');
 
         // Create a fake image
         $file = UploadedFile::fake()->image('test.jpg');
 
         // Perform the POST request
-        $response = $this->post('/image-upload', [
-            '_token' => csrf_token(), #Baru ditambahin
+        $response = $this->post(route('image.store'), [
             'image' => $file,
         ]);
 
-        // Assert the response is a redirect back
-        $response->assertStatus(302);
-
+        
         // Assert the file was stored
-        Storage::disk('public')->assertExists($this->original_image.$file->hashName());
-
+        Storage::disk('original')->assertExists($file->hashName());
+        
         // Assert the database contains the correct path
         $this->assertDatabaseHas('images', [
-            'path' => public_path($this->original_image).$file->hashName(),
+            'path' => $file->hashName(),
         ]);
-
+        
+        // Assert the response is a redirect back
+        $response->assertStatus(302);
     }
 }

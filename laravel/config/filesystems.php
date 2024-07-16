@@ -36,6 +36,18 @@ return [
             'throw' => false,
         ],
 
+        'original' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/images/original') ,
+            'throw' => false,
+        ],
+
+        'preprocessed' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/images/preprocessed') ,
+            'throw' => true,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

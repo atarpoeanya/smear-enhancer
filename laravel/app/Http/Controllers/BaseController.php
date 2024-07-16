@@ -4,12 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Jobs\ProcessImage;
 use App\Models\Image;
-use Barryvdh\Debugbar\Facade as Debugbar;
+use App\Services\CreatePreprocessingJob;
+use Debugbar;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 
 class BaseController extends Controller
 {
-    private $original_path = 'storage/images/original/';
+    private $original_path = 'storage/images/original';
 
     private $preprocessed_path = 'storage/images/preprocessed/';
 
@@ -27,27 +30,51 @@ class BaseController extends Controller
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $imageName = time().'.'.$request->image->extension();
-
-        $request->image->move(public_path($this->original_path), $imageName);
+        $path = $request->file('image')->store('', 'original');
+        $episode_len = 1;
 
         $image = new Image();
-        $image->path = $this->original_path.$imageName;
+        $image->path = $path;
         $image->save();
 
-        return back();
+        $parameter = json_encode([
+            'path' => $image->path,
+            'ep' => $episode_len
+        ]);
+        
+
+        // Dispatch job to background
+
+        return redirect()->route('loading', ['id' => $image->id, 'data'=>urlencode($parameter)]);
     }
 
-    // Save the image path to the database
-    // DebugBar::info([ $image->path, $this->preprocessed_path, base_path($this->temp_model)]);
-    // ProcessImage::dispatch($image, public_path($image->path), public_path($this->preprocessed_path), base_path($this->temp_model), 1);
+
+    public function loading($id, $data) {
+        /**
+         * public Image $original, 
+         * public string $image_path, 
+         * public string $output_folder, 
+         * public string $model_path, 
+         * public int $episode_len
+         * **/ 
+        $parameter = json_decode(urldecode($data), true);
+
+        $service = new CreatePreprocessingJob;
+        $service->createJob($id, $parameter['path'], $this->temp_model, $parameter['ep']);
+        $episode_len = $parameter['ep'];
+
+        return view('loading')->with('current_episode', 0)->with('episode_len', $episode_len);
+    }
+
+
     public function deleteImage($id)
     {
         $image = Image::find($id);
         $image->delete();
 
-        return back()
-            ->with('success', 'Post deleted successfully');
+        Storage::disk('original')->delete($image->path);
+
+        return back();
     }
 
     public function store_p(Request $request)
