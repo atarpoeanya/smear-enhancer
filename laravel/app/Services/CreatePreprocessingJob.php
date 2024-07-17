@@ -3,11 +3,16 @@
 namespace App\Services;
 
 use App\Jobs\ProcessImage;
+use App\Models\ProcessedImage;
+use Illuminate\Support\Facades\Bus;
 
 class CreatePreprocessingJob
 {
     public function createJob(string $id, string $path,string $model, int $episode_len): void
     {
-        ProcessImage::dispatch($id, $path, $model, $episode_len);
+
+        Bus::chain([
+            new ProcessImage($id, $path, $model, $episode_len)
+        ])->dispatch();
     }
 }

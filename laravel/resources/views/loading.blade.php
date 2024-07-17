@@ -16,6 +16,9 @@
       <p>Processing Image</p>
       <span>Step {{ $current_episode }} of {{ $episode_len }}</span>
     </div>
+    <button>
+      Result
+    </button>
 
   </div>
 </body>

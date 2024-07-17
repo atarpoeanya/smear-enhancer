@@ -20,6 +20,10 @@
                 <form method="POST" action="{{ route('image.store') }}" enctype="multipart/form-data">
                     @csrf
                     <div class="form-group">
+                        <label for="episode_len">Episode length</label>
+                        <input type="number" class="form" id="episode_len" name="episode_len">
+                    </div>
+                    <div class="form-group">
                         <label for="image">Choose Image</label>
                         <input type="file" class="form-control-file" id="image" name="image" onchange="previewImage(event)">
                     </div>
@@ -33,11 +37,17 @@
                 {{count($images)}}
               @foreach ($images as $image)
               <div class="container flex justify-between">
-                  <p>{{ $image->path }}</p>
+                <div>
+                    <span>{{$image->id}}</span>
+                    <span>{{$image->created_at}}</span>
+                </div>
                   <form action="{{ route('image.delete', $image->id)}}" method="post">
                     @csrf
                     @method('delete')
                     <button type="submit">Delete button</button>
+                  </form>
+                  <form action="{{route('image.show', $image->id)}}" method="get">
+                    <button>SHOW</button>
                   </form>
               </div>
               @endforeach

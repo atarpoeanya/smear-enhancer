@@ -14,10 +14,7 @@ class ImageTest extends TestCase
 
     /**
      * A basic feature test example.
-     */
-    private $original_image = 'storage/images/original/';
-
-    private $preprocessed_image = 'storage/images/preprocessed/';
+     */    
 
     public function test_image_upload_and_return_response(): void
     {
@@ -30,9 +27,10 @@ class ImageTest extends TestCase
         // Perform the POST request
         $response = $this->post(route('image.store'), [
             'image' => $file,
+            'episode_len' => 1
         ]);
 
-        
+        // dump(Storage::disk('original')->path(''));
         // Assert the file was stored
         Storage::disk('original')->assertExists($file->hashName());
         

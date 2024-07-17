@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\ProcessImage;
 use App\Models\Image;
+use App\Models\ProcessedImage;
 use App\Services\CreatePreprocessingJob;
 use Debugbar;
 use Illuminate\Http\Request;
@@ -16,7 +17,8 @@ class BaseController extends Controller
 
     private $preprocessed_path = 'storage/images/preprocessed/';
 
-    private $temp_model = 'python-script/blood-enhancer/model/17_2500_model.npz';
+    // private $temp_model = 'python-script/blood-enhancer/model/17_2500_model.npz';
+    private $temp_model = 'python-script/blood-enhancer/model/model_6000.npz';
 
     public function index()
     {
@@ -28,10 +30,12 @@ class BaseController extends Controller
     {
         $request->validate([
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'episode_len' => 'required|int',
         ]);
-
+        
         $path = $request->file('image')->store('', 'original');
-        $episode_len = 1;
+        // $path = Storage::putFile('original/', $request->file('image'));
+        $episode_len = $request->input('episode_len');
 
         $image = new Image();
         $image->path = $path;
@@ -44,7 +48,6 @@ class BaseController extends Controller
         
 
         // Dispatch job to background
-
         return redirect()->route('loading', ['id' => $image->id, 'data'=>urlencode($parameter)]);
     }
 
@@ -61,6 +64,7 @@ class BaseController extends Controller
 
         $service = new CreatePreprocessingJob;
         $service->createJob($id, $parameter['path'], $this->temp_model, $parameter['ep']);
+        
         $episode_len = $parameter['ep'];
 
         return view('loading')->with('current_episode', 0)->with('episode_len', $episode_len);
@@ -77,33 +81,9 @@ class BaseController extends Controller
         return back();
     }
 
-    public function store_p(Request $request)
-    {
-
-        $originalFolderPath = 'storage/images/original/';
-        $preprocessedFolderPath = 'storage/images/original/';
-
-        $request->validate([
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
-
-        $imageName = time().'.'.$request->image->extension();
-        $originalImagePath = public_path($originalFolderPath.$imageName);
-
-        // Save the original image
-        $request->image->move(public_path($originalFolderPath), $imageName);
-
-        // Call the Python script for preprocessing
-        $preprocessedImagePath = public_path($preprocessedFolderPath.$imageName);
-        $command = escapeshellcmd('python '.base_path('process_image.py').' '.$originalImagePath.' '.$preprocessedImagePath);
-        $output = shell_exec($command);
-
-        // Save the image path to the database
-        $image = new Image();
-        $image->path = $preprocessedFolderPath.$imageName;
-        $image->save();
-
-        return back()->with('success', 'You have successfully uploaded and processed the image.')
-            ->with('image', $image->path);
+    public function show(string $image_id) {
+        $original = Image::find($image_id);
+        $processed_images = ProcessedImage::getOrderedImages($image_id);
+        return view('show')->with(['original'=> $original, 'processed_images' => $processed_images]);
     }
 }

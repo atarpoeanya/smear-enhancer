@@ -21,10 +21,12 @@ class DeleteImageTest extends TestCase
 
         // $image = Image::factory()->create();
 
-        $file = File::create('image.png', 200);
+        $file = File::fake()->image('image.png', 200, 200);
+
         $image = new Image;
         $image->path = $file->store('', 'original');
         $image->save();
+        Storage::disk('original')->assertExists($image->path);
 
         // Act: Call the deleteImage function
         $response = $this->delete(route('image.delete', $image->id));

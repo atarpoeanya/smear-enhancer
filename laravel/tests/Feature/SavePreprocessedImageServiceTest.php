@@ -2,7 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\Image;
+
+use App\Models\ProcessedImage;
 use App\Services\SavePreprocessedImage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -23,26 +24,23 @@ class SavePreprocessedImageServiceTest extends TestCase
         Storage::fake('preprocessed');
 
         // Create a fake image file in the 'public' disk
-        $imageName = 'test-image.jpg';
-        Storage::disk('public')->put($imageName, 'test-content');
+        $imageName = 'image.png';
+        $file = File::fake()->image($imageName);
+        $pth = $file->store('', 'public');
+        Storage::disk('public')->assertExists($pth);
 
-        // Mock the Image model and its relationship
-        $original = Mockery::mock(Image::class);
-        $original->shouldReceive('find')->with('1')->andReturn($original);
-        $original->shouldReceive('processedImages->save')->andReturn(true);
-
-        $this->instance(Image::class, $original);
-
-        // Create an instance of the service
+        // // Create an instance of the service
         $service = new SavePreprocessedImage();
+        // // Call the method
+        $id_rs = $service->saveImage('1', $pth);
 
-        // Call the method
-        $result = $service->saveImage('1', $imageName);
+        
+        $this->assertDatabaseHas('processed_image', ['id' => $id_rs]);
+        $result = ProcessedImage::find($id_rs[0]);
+        // // Assertions
+        Storage::disk('public')->assertMissing($pth);
+        Storage::disk('preprocessed')->assertExists($result->path);
 
-        // Assertions
-        Storage::disk('public')->assertMissing($imageName);
-        Storage::disk('preprocessed')->assertExists($imageName);
-
-        $this->assertTrue($result);
+        // $this->assertTrue($result);
     }
 }
