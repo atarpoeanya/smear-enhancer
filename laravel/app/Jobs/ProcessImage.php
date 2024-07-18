@@ -19,7 +19,7 @@ class ProcessImage implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(public $original_id, public string $original_path, public string $model_path, public int $episode_len, public bool $first = True) {}
+    public function __construct(public $original_id, public string $original_path, public string $model_path, public int $episode_len, public bool $first = true) {}
 
     /**
      * Execute the job.
@@ -30,29 +30,30 @@ class ProcessImage implements ShouldQueue
         $original_path = Storage::disk('original')->path($this->original_path);
         if (!$this->first) {
             $original_path = Storage::disk('preprocessed')->path($this->original_path);
+            // dump($original_path);
         }
-        dump($original_path ? $original_path : "It's null");
+        // dump($original_path ? $original_path : "It's null");
 
-        $temp_name = 'st-' . str_replace('.','',microtime(true)) . '.png';
-        $output_path = public_path('storage') . '/' . $temp_name;
+        $temp_name = 'st-'.str_replace('.', '', microtime(true)).'.png';
+        $output_path = public_path('storage').'/'.$temp_name;
         // dump();
-        
+
         $command = escapeshellcmd('python '.'"'.base_path('python-script/blood-enhancer/test_b.py').'" "'.$original_path.'" "'.$output_path.'" "'.$this->model_path.'" "'. 1 .'"');
-        
+
         // // ("Usage: python process_image.py <input_path> <output_path> <model_path> <episode_len>")
-        
+        // dump($command);
         $result = Process::run($command);
-        dump($this->episode_len);
+        // dump($this->episode_len);
         $this->episode_len--;
-        if($result->successful()) {
+        if ($result->successful()) {
             // Save preprocessed image to public disk
             $previous_image = $savePreprocessedImage->saveImage($this->original_id, $temp_name);
-            
-            if($this->episode_len != 0) {
-                $this->appendToChain(new ProcessImage($this->original_id, $previous_image[1], $this->model_path, $this->episode_len, False));
+
+            if ($this->episode_len != 0) {
+                $this->appendToChain(new ProcessImage($this->original_id, $previous_image[1], $this->model_path, $this->episode_len, false));
             }
         }
         Log::error($result->errorOutput());
-        
+
     }
 }

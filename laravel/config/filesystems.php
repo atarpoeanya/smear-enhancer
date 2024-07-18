@@ -38,13 +38,13 @@ return [
 
         'original' => [
             'driver' => 'local',
-            'root' => storage_path('app/public/images/original') ,
+            'root' => storage_path('app/public/images/original'),
             'throw' => false,
         ],
 
         'preprocessed' => [
             'driver' => 'local',
-            'root' => storage_path('app/public/images/preprocessed') ,
+            'root' => storage_path('app/public/images/preprocessed'),
             'throw' => true,
         ],
 

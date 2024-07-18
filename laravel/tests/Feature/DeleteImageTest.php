@@ -3,8 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Image;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\Testing\File;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -29,12 +27,12 @@ class DeleteImageTest extends TestCase
         Storage::disk('original')->assertExists($image->path);
 
         // Act: Call the deleteImage function
-        $response = $this->delete(route('image.delete', $image->id));
+        $response = $this->delete(route('image.destroy', $image->id));
 
         $this->assertDatabaseMissing('images', ['id' => $image->id]);
         Storage::disk('original')->assertMissing($image->path);
 
         // Assert: Check if the image is deleted and if the correct response is returned
-        $response->assertRedirect();        
+        $response->assertRedirect();
     }
 }

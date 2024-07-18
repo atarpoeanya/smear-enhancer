@@ -2,15 +2,12 @@
 
 namespace Tests\Feature;
 
-
+use App\Models\Image;
 use App\Models\ProcessedImage;
 use App\Services\SavePreprocessedImage;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\Testing\File;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
-use Mockery;
 
 class SavePreprocessedImageServiceTest extends TestCase
 {
@@ -29,13 +26,16 @@ class SavePreprocessedImageServiceTest extends TestCase
         $pth = $file->store('', 'public');
         Storage::disk('public')->assertExists($pth);
 
+        $image = new Image;
+        $image->path = "";
+        $image->save();
+
         // // Create an instance of the service
         $service = new SavePreprocessedImage();
         // // Call the method
-        $id_rs = $service->saveImage('1', $pth);
+        $id_rs = $service->saveImage($image->id, $pth);
 
-        
-        $this->assertDatabaseHas('processed_image', ['id' => $id_rs]);
+        $this->assertDatabaseHas('processed_image', ['id' => $id_rs[0]]);
         $result = ProcessedImage::find($id_rs[0]);
         // // Assertions
         Storage::disk('public')->assertMissing($pth);
