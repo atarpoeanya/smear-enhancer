@@ -12,6 +12,11 @@
       <input type="file" name="image" id="image" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" onchange="previewImage(event)">
     </div>
     <div class="mb-4">
+        <label for="isRaw" class="block text-gray-700 text-sm font-bold mb-2">Reduce Image Quality</label>
+        <input type="hidden" name="checkbox_value" value="0" id="checkbox_value">
+        <input type="checkbox" id="isRaw" class="form-checkbox h-5 w-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500" name="isRaw" onclick="updateHiddenInput(this)">
+    </div>
+    <div class="mb-4">
       <label for="episode" class="block text-gray-700 text-sm font-bold mb-2">Episode:</label>
       <input type="number" name="episode" id="episode" min="1" max="15" value="1" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
     </div>
@@ -35,7 +40,7 @@
     <div class="border rounded p-2 bg-white">
       <img src="{{ asset('storage' .'/images/original/' . $image->path) }}" alt="Image" class="w-32 h-32 object-cover">
       <div class="mt-2">
-        <p><strong>Episode:</strong> {{ "episode" }}</p>
+        <p><strong>Episode:</strong> {{ $image->episode }}</p>
         <p><strong>Model:</strong> {{ "model" }}</p>
         <p><strong>Uploaded:</strong> {{ $image->created_at->format('Y-m-d H:i:s') }}</p>
       </div>
@@ -66,5 +71,13 @@
           };
           reader.readAsDataURL(event.target.files[0]);
       }
+
+      function updateHiddenInput(checkbox) {
+            // Get the hidden input field
+            var hiddenInput = document.querySelector('input[name="checkbox_value"]');
+            
+            // Update the value based on checkbox state
+            hiddenInput.value = checkbox.checked ? 1 : 0;
+        }
   </script>
 @endpush

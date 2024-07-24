@@ -18,13 +18,18 @@ class ImageTest extends TestCase
     {
         // Fake the storage
         Storage::fake('original');
-        // Create a fake image
-        $file = UploadedFile::fake()->image('test.jpg');
+        
 
+        $file = UploadedFile::fake()->image('test-image.jpg');
+        $episode = 1;
+        $model = 1;
+        
         // Perform the POST request
         $response = $this->post(route('image.store'), [
             'image' => $file,
-            'episode_len' => 1,
+            'episode' => $episode,
+            'model' => $model,
+            'checkbox_value' => true,
         ]);
 
         // Assert the file was stored

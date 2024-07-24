@@ -27,6 +27,7 @@ class ProcessesImageTest extends TestCase
         $file = File::create('image.png', 200);
         $image = new Image;
         $image->path = $file->store('', 'original');
+        $image->episode = 1;
         $image->save();
 
         Bus::fake();

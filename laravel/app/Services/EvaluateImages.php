@@ -2,22 +2,26 @@
 
 namespace App\Services;
 
-use App\Jobs\ProcessImage;
-use App\Models\Image;
-use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Process;
+
 
 class EvaluateImages
 {
-  function getPSNR($var = "no") : string {
+  function getPSNR(string $orginal_path, string $output_path) : float {
     // $psnr = [];
     // $original_image = Image::find($original_id);
 
-    $command = escapeshellcmd('python '.'"'.base_path('python-script/blood-enhancer/psnr_eval.py') . '" "' . $var . '"');
+    $command = escapeshellcmd('python '.'"'.base_path('python-script/blood-enhancer/psnr_eval.py') . '" "' . $orginal_path . '" "'. $output_path.'"');
 
-    $result = Process::run($command);
+    $result = Process::path(base_path())
+            ->env([
+                'SYSTEMROOT' => getenv('SYSTEMROOT'),
+                'PATH' => getenv("PATH"),
+            ])
+            ->run($command);
 
-    $output = $result->errorOutput();
+    // $result = Process::run($command);
+    $output = floatval($result->output());
 
     return $output;
   }

@@ -48,6 +48,12 @@ return [
             'throw' => true,
         ],
 
+        'action' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/images/action'),
+            'throw' => true,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

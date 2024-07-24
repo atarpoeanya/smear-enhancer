@@ -5,25 +5,30 @@ import sys
 
 
 # def psnr(image_path, preprocessed_images_paths: list[str], original_folder_path, preprocessed_folder_path):
-def psnr(var = "This is  a test"):
-  psnr = var
+def psnr(input_path, output_path):
+  psnr = 0
 
-  # originial = cv2.imread(os.path.join(original_folder_path, image_path))
-  # for path in preprocessed_images_paths:
-  #   temp_image = cv2.imread(os.path.join(preprocessed_folder_path,  path))
-  #   psnr_value = cv2.PSNR(originial, temp_image)
-  #   psnr[path]= psnr_value
+  originial = cv2.imread(input_path)
+  output = cv2.imread(output_path)
+
+  psnr = cal_psnr(originial, output)
   
-
+  
   return psnr
     # TODO
     # PSNR GROUND TRUTH to RESULT
     # Over over exposure
 
+def cal_psnr(image1, image2):
+   # Own implementation
+    mse = np.mean((image1.astype(np.float32) / 255 - image2.astype(np.float32) / 255) ** 2)
+    return 10 * np.log10(1. / mse)
+
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
+    if len(sys.argv) != 3:
         sys.exit(1)
 
     input_path = sys.argv[1]
-    psnr(input_path)
+    output_path = sys.argv[2]
+    print(psnr(input_path, output_path))

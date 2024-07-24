@@ -9,4 +9,6 @@ Route::delete('image-upload/{id}', [BaseController::class, 'deleteImage'])->name
 
 Route::get('image-upload/processing/{id}/{data}', [BaseController::class, 'loading'])->name('loading');
 Route::get('image-show/{id}', [BaseController::class, 'show'])->name('image.show');
+
 Route::get('test', [BaseController::class, 'thisIsATest'])->name('testing.show');
+Route::post('test', [BaseController::class, 'pingingTest'])->name('testing.ping');

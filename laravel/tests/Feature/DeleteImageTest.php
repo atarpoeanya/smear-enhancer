@@ -23,8 +23,9 @@ class DeleteImageTest extends TestCase
 
         $image = new Image;
         $image->path = $file->store('', 'original');
+        $image->episode = 1;
         $image->save();
-        Storage::disk('original')->assertExists($image->path);
+        Storage::disk('original')->assertExists($file->hashName());
 
         // Act: Call the deleteImage function
         $response = $this->delete(route('image.destroy', $image->id));

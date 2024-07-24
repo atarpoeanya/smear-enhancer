@@ -11,12 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('processed_image', function (Blueprint $table) {
+        Schema::create('processed_images', function (Blueprint $table) {
             $table->id();
             $table->foreignId('images_id')->constrained(
                 table: 'images', indexName: 'original_image_id'
             )->cascadeOnDelete();
+            $table->float('psnr');
             $table->string('path');
+            $table->string('colormap_path');
             $table->timestamps();
         });
     }
@@ -26,6 +28,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('processed_image');
+        Schema::dropIfExists('processed_images');
+
     }
 };

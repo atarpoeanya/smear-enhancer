@@ -39,17 +39,14 @@ def clahe_hsv(image: np.ndarray, clip=2, tileSize=(4,4)):
 
 def HE(image: np.ndarray, mean, contrast_factor):
 
-  temp = np.uint8(image.copy())
-  print(temp.shape)
+  temp = np.uint8(image.copy() * 255)
   temp = np.transpose(temp, (1,2,0))
-  print(temp.shape)
   temp = cv2.cvtColor(temp, cv2.COLOR_BGR2HSV)
   
   temp[...,2] = (temp[...,2] - mean) * contrast_factor + mean
   temp = cv2.cvtColor(temp, cv2.COLOR_HSV2BGR)
   temp = np.transpose(temp, (2,0,1))
-  print(temp.shape)
-  return np.float32(temp)
+  return np.float32(temp / 255)
 
 def umf(image: np.ndarray, SIGMA=0.8):
     img = (image.copy() * 255).astype(np.uint8)
@@ -217,56 +214,3 @@ def backBGR(hsi):
   bgr = np.uint8(np.round(bgr))
   
   return bgr
-
-def compute_batch_rgb_angles(batch1, batch2):
-    """
-    Computes the angles between corresponding pixels across batches of RGB images.
-
-    Parameters:
-    batch1 (numpy.ndarray): First batch of RGB images with shape (batch_size, 3, height, width).
-    batch2 (numpy.ndarray): Second batch of RGB images with shape (batch_size, 3, height, width).
-
-    Returns:
-    numpy.ndarray: Angles in degrees between corresponding pixels, with shape (batch_size, height, width).
-    """
-    
-    # Check if input dimensions match
-    if batch1.shape != batch2.shape:
-        raise ValueError("Input batches must have the same shape")
-    
-    # Reshape to (batch_size * height * width, 3) for vector operations
-    vec_batch1 = batch1.transpose(0, 2, 3, 1).reshape(-1, 3)
-    vec_batch2 = batch2.transpose(0, 2, 3, 1).reshape(-1, 3)
-
-    # Compute the dot product for corresponding pixels
-    dot_product = np.einsum('ij,ij->i', vec_batch1, vec_batch2)
-
-    # Compute the magnitudes for corresponding pixels
-    magnitude_batch1 = np.linalg.norm(vec_batch1, axis=1)
-    magnitude_batch2 = np.linalg.norm(vec_batch2, axis=1)
-
-    # Calculate the cosine of the angles
-    cos_angle = dot_product / (magnitude_batch1 * magnitude_batch2)
-
-    # Handle potential floating-point precision issues
-    cos_angle = np.clip(cos_angle, -1.0, 1.0)
-
-    # Compute the angles in radians and then convert to degrees
-    angle_rad = np.arccos(cos_angle)
-    angle_deg = np.degrees(angle_rad)
-
-    # Reshape the result back to the original batch format (batch_size, height, width)
-    batch_size, _, height, width = batch1.shape
-    angle_deg = angle_deg.reshape(batch_size, height, width)
-
-    return angle_deg
-
-def ssim(original_image,distorted_image):
-
-    # Convert the images to grayscale (optional, but often done for SSIM)
-    original_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY)
-    distorted_image =cv2.cvtColor(distorted_image, cv2.COLOR_BGR2GRAY)
-
-
-    # Calculate SSIM
-    return structural_similarity(original_image, distorted_image,channel_axis=-1 ,data_range=1)

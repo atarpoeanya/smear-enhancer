@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('images', function (Blueprint $table) {
             $table->id();
             $table->string('path');
+            $table->integer('episode', false, true);
+            $table->string('status')->default('raw');
             $table->timestamps();
         });
     }

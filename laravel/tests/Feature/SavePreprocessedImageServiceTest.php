@@ -19,27 +19,37 @@ class SavePreprocessedImageServiceTest extends TestCase
         // Mock the Storage facade
         Storage::fake('public');
         Storage::fake('preprocessed');
+        Storage::fake('action');
 
         // Create a fake image file in the 'public' disk
         $imageName = 'image.png';
+        $imageName_2 = 'image_2.png';
+
         $file = File::fake()->image($imageName);
         $pth = $file->store('', 'public');
         Storage::disk('public')->assertExists($pth);
 
+        $file = File::fake()->image($imageName_2);
+        $pth_2 = $file->store('', 'public');
+        Storage::disk('public')->assertExists($pth_2);
+
         $image = new Image;
         $image->path = "";
+        $image->episode = 1;
         $image->save();
 
         // // Create an instance of the service
         $service = new SavePreprocessedImage();
         // // Call the method
-        $id_rs = $service->saveImage($image->id, $pth);
+        $id_rs = $service->saveImage($image->id, $pth, $pth_2);
 
-        $this->assertDatabaseHas('processed_image', ['id' => $id_rs[0]]);
+        $this->assertDatabaseHas('processed_images', ['id' => $id_rs[0]]);
         $result = ProcessedImage::find($id_rs[0]);
         // // Assertions
         Storage::disk('public')->assertMissing($pth);
+        Storage::disk('public')->assertMissing($pth_2);
         Storage::disk('preprocessed')->assertExists($result->path);
+        Storage::disk('action')->assertExists($result->colormap_path);
 
         // $this->assertTrue($result);
     }
