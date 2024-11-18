@@ -22,7 +22,7 @@ class ProcessImage implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(public $original_id, public string $original_path, public string $model_path, public int $episode_len, public int $max_episode , public bool $hasRaw = False, public bool $first = true) {}
+    public function __construct(public $original_id, public string $original_path, public string $model_path, public int $episode_len, public int $max_episode , public bool $hasRaw = False, public float $exposure_factor = 1, public bool $first = true) {}
 
     /**
      * Execute the job.
@@ -41,7 +41,7 @@ class ProcessImage implements ShouldQueue
         
         $colormap_path = public_path('storage') . '/' . $cm_name;
         
-        $result = $this->runCommand($original_path, $output_path, $colormap_path, $this->hasRaw);
+        $result = $this->runCommand($original_path, $output_path, $colormap_path, $this->hasRaw, $this->exposure_factor);
 
         $this->episode_len--;
         if ($result->successful()) {
@@ -54,7 +54,7 @@ class ProcessImage implements ShouldQueue
             // $event->dispatch();
 
             if ($this->episode_len != 0) {
-                $this->appendToChain(new ProcessImage($this->original_id, $previous_image[1], $this->model_path, $this->episode_len, $this->max_episode , false, false));
+                $this->appendToChain(new ProcessImage($this->original_id, $previous_image[1], $this->model_path, $this->episode_len, $this->max_episode , false, 1 ,false));
             }
         }
 
@@ -62,9 +62,9 @@ class ProcessImage implements ShouldQueue
         
     }
 
-    private function runCommand($original_path, $output_path, $colormap_path, $hasRaw = False) : ProcessResult {
+    private function runCommand($original_path, $output_path, $colormap_path, $hasRaw = False, $exposure_factor = 1) : ProcessResult {
 
-        $command = escapeshellcmd('python '.'"'.base_path('python-script/blood-enhancer/test_b.py').'" "'.$original_path.'" "'.$output_path.'" "'.$this->model_path.'" "'. $colormap_path .'" "' . public_path('storage') . '" "'. $hasRaw .'"');
+        $command = escapeshellcmd('python '.'"'.base_path('python-script/blood-enhancer/test_b.py').'" "'.$original_path.'" "'.$output_path.'" "'.$this->model_path.'" "'. $colormap_path .'" "' . public_path('storage') . '" "'. $hasRaw .'" "'. $exposure_factor.'"');
 
         return Process::run($command);
     }

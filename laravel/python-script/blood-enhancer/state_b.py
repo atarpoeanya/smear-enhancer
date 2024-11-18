@@ -26,7 +26,7 @@ class State():
             if np.sum(act[i]==1) > 0:
                 temp1[i] = smallFunc.contrast(bgr_t[i]+0.5, 0.95)
             if np.sum(act[i]==2) > 0:
-                temp2[i] = smallFunc.contrast(bgr_t[i]+0.5, 0.95)
+                temp2[i] = smallFunc.contrast(bgr_t[i]+0.5, 1.05)
             if np.sum(act[i]==3) > 0:
                 temp = cv2.cvtColor(bgr_t[i], cv2.COLOR_BGR2HSV)
                 temp[1] *= 0.95
@@ -39,7 +39,7 @@ class State():
                 temp13[i] = smallFunc.clahe_hsv(bgr_t[i])
             if np.sum(act[i]==14) > 0:
                 temp14[i] = smallFunc.umf(bgr_t[i])
-            if np.sum(act[i]==15) > 0:
+            if np.sum(act[i]==6) > 0:
                 temp15[i] = smallFunc.stretching(bgr_t[i])
         bgr1 = np.transpose(temp1, (0,3,1,2))
         bgr2 = np.transpose(temp2, (0,3,1,2))
@@ -47,9 +47,9 @@ class State():
         bgr4 = np.transpose(temp4, (0,3,1,2))
 
         bgr5 = np.copy(self.image)
-        bgr5 = bgr5 - 0.5*0.05
+        bgr5 = bgr5 - 0.5* 0.05
         bgr6 = np.copy(self.image)
-        bgr6 = bgr6 + 0.5*0.05
+        bgr6 = bgr6 + 0.5* 0.05
         bgr7 = np.copy(self.image)
         bgr7[:,1:,:,:] *= 0.95
         bgr8 = np.copy(self.image)
@@ -75,7 +75,7 @@ class State():
         self.image = np.where(act_3channel==3, bgr3, self.image)
         self.image = np.where(act_3channel==4, bgr4, self.image)
         self.image = np.where(act_3channel==5, bgr5, self.image)
-        self.image = np.where(act_3channel==6, bgr6, self.image)
+        self.image = np.where(act_3channel==15, bgr6, self.image)
         self.image = np.where(act_3channel==7, bgr7, self.image)
         self.image = np.where(act_3channel==8, bgr8, self.image)
         self.image = np.where(act_3channel==9, bgr9, self.image)
@@ -84,6 +84,6 @@ class State():
         self.image = np.where(act_3channel==12, bgr12, self.image)
         self.image = np.where(act_3channel==13, bgr13, self.image)
         self.image = np.where(act_3channel==14, bgr14, self.image)
-        self.image = np.where(act_3channel==15, bgr15, self.image)
+        self.image = np.where(act_3channel==6, bgr15, self.image)
 
 

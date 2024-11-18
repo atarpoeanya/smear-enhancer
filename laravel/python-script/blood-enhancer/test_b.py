@@ -3,8 +3,8 @@ from chainer import serializers
 from MyFCN import *
 from chainer import cuda, optimizers, Variable
 import sys
-from smallFunc import HE
-import random
+from smallFunc import HE,new_contrast, legacy_contrast
+from augment import process_image
 import datetime
 from create_colormap import generateColormap
 import os
@@ -29,7 +29,8 @@ def test(loader: image_loader.ImageLoader,
          colormap_path: str, 
          public_path: str,
          episode_len: int,
-         hasRaw = False):
+         hasRaw = False,
+         exposure_factor = 1):
     sum_psnr   = 0
     sum_reward = 0
     
@@ -39,7 +40,14 @@ def test(loader: image_loader.ImageLoader,
     raw_n = raw_x.copy()
     if hasRaw:
         for i in range(0,1):
-                raw_n[i] = HE(raw_n[i], 0.9, 0.5)
+                raw_n[i] = process_image(
+                        raw_n[i],
+                        blur_type=  '',   #'motion',
+                        blur_degree=5,
+                        color_intensity_factor=1,
+                        exposure_factor = exposure_factor
+                    )
+                # raw_n[i] = legacy_contrast(raw_n[i], exposure_factor)
     current_state.reset(raw_n)
     # raw_n = smallFunc.lower_contrast(raw_n)
     reward = np.zeros(raw_x.shape, raw_x.dtype)*255
@@ -78,7 +86,7 @@ def test(loader: image_loader.ImageLoader,
     return image_result_path
  
  
-def main(input_path: str, image_result_path: str, model_used_path: str, colormap_path: str, public_path: str, hasRaw = False , episode_len = 1):
+def main(input_path: str, image_result_path: str, model_used_path: str, colormap_path: str, public_path: str, hasRaw = False , exposure_factor = 1, episode_len = 1):
     #_/_/_/ load dataset _/_/_/ 
     mini_batch_loader = image_loader.ImageLoader(input_path)
  
@@ -97,12 +105,12 @@ def main(input_path: str, image_result_path: str, model_used_path: str, colormap
 
     #_/_/_/ testing _/_/_/
     
-    return test(mini_batch_loader, agent, image_result_path, colormap_path, public_path  ,episode_len, hasRaw)
+    return test(mini_batch_loader, agent, image_result_path, colormap_path, public_path  ,episode_len, hasRaw, exposure_factor)
     
      
  
 if __name__ == '__main__':
-    if len(sys.argv) != 7:
+    if len(sys.argv) != 8:
         sys.exit(1)
 
     input_path = sys.argv[1]
@@ -111,7 +119,8 @@ if __name__ == '__main__':
     colormap_path = sys.argv[4]
     public_path = sys.argv[5]
     has_raw = bool(sys.argv[6])
+    exposure_factor = float(sys.argv[7])
     try:
-        main(input_path, output_path, model_path, colormap_path , public_path, has_raw)
+        main(input_path, output_path, model_path, colormap_path , public_path, has_raw, exposure_factor)
     except Exception as error:
         print(error.message)

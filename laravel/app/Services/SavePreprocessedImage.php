@@ -34,9 +34,13 @@ class SavePreprocessedImage
         $p_image = new ProcessedImage;
         $psnr = new EvaluateImages;
         $psnr_value = $psnr->getPSNR($full_original_path, $processed_path);
+        $entropy_value = $psnr->getEntropy($processed_path);
+        $mse_value = $psnr->getMSE($full_original_path, $processed_path);
 
         Log::error($psnr_value);        
         $p_image->psnr = $psnr_value;
+        $p_image->mse = $mse_value;
+        $p_image->entropy = $entropy_value;
         $p_image->path = $pre_path;
         $p_image->colormap_path = $pre_c_path;
         $original->processedImages()->save($p_image);

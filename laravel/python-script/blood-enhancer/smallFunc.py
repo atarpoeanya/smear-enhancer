@@ -1,6 +1,8 @@
 import numpy as np
 import cv2
 from skimage.metrics import structural_similarity
+from PIL import Image
+from PIL import ImageEnhance as ie
 
 # claheFilter_2 = cv2.createCLAHE(clipLimit=0.3, tileGridSize=(8,8))
 
@@ -14,6 +16,29 @@ def contrast(image: np.ndarray, b):
   image_rgb = np.clip(image_rgb,0,1)
   return (image_rgb / 255).astype(np.float32)
 
+def new_contrast(image: np.ndarray, b, gamma=0):
+  image_rgb = (image.copy() * 255).astype(np.uint8)
+
+  image_rgb = np.clip(b * image_rgb + gamma, 0, 255)
+  return (image_rgb / 255).astype(np.float32)
+
+def legacy_contrast(image, contrast_factor):
+    # Open the image and convert it to an array
+    image_rgb = (image.copy() * 255).astype(np.uint8)
+    image_rgb = np.transpose(image_rgb , (1,2,0))
+    img_pil = Image.fromarray(image_rgb)
+    
+    obj = ie.Contrast(img_pil)
+    
+    manual_contrast_img = obj.enhance(contrast_factor)
+
+    np_image = np.array(manual_contrast_img)
+    
+
+    np_image = np.float32(np_image / 255)
+    np_image = np.transpose(np_image, (2,0,1))
+    return np_image
+
 def clahe_lab(image: np.ndarray, clip=0.3, tileSize=(8,8)):
   claheFilter_2 = cv2.createCLAHE(clip, tileSize)
   temp = np.zeros(image.shape, image.dtype)
@@ -25,7 +50,7 @@ def clahe_lab(image: np.ndarray, clip=0.3, tileSize=(8,8)):
   return temp
 
 
-def clahe_hsv(image: np.ndarray, clip=2, tileSize=(4,4)):
+def clahe_hsv(image: np.ndarray, clip=0.8, tileSize=(4,4)):
   claheFilter_2 = cv2.createCLAHE(clip, tileSize)
 
   temp1 = (image.copy() * 255).astype(np.uint8)

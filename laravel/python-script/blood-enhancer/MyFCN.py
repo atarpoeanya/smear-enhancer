@@ -49,6 +49,7 @@ class MyFcn(chainer.Chain, a3c.A3CModel):
              diconv2=DilatedConvBlock(2, net.diconv2.diconv.W.data, net.diconv2.diconv.b.data),
             diconv3=DilatedConvBlock(3, net.diconv3.diconv.W.data, net.diconv3.diconv.b.data),
             diconv4=DilatedConvBlock(4, net.diconv4.diconv.W.data, net.diconv4.diconv.b.data),
+            
             diconv5_pi=DilatedConvBlock(3, net.diconv5.diconv.W.data, net.diconv5.diconv.b.data),
             diconv6_pi=DilatedConvBlock(2, net.diconv6.diconv.W.data, net.diconv6.diconv.b.data),
             

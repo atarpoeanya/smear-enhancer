@@ -18,4 +18,5 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
- **/__pycache__/ 
+**/__pycache__/ 
+**/testing_image_data/
